@@ -1,7 +1,5 @@
 input.onButtonPressed(Button.A, function () {
     serial.writeLine("")
-    serial.writeLine("")
-    serial.writeLine("")
     sendPacket(hardware_address, "10.10.1.101", "10.10.1.102", "text", "Hello world! It's me! Margaret! Boy this message sure is long")
 })
 function sendPacketFragment (time_stamp: number, field: string, packet_fragment: string) {
@@ -32,9 +30,41 @@ function generateHexString (string_length: number) {
 }
 radio.onReceivedString(function (receivedString) {
     serial.writeLine(receivedString)
+    msg_by_time_keys = []
+    msg_by_time_values = []
+    msg_by_time_index = 0
+    r_timestamp = receivedString.substr(0, 2)
+    msg_by_time_index = msg_by_time_keys.indexOf(r_timestamp)
+    if (msg_by_time_index == -1) {
+        msg_by_time_keys.push(r_timestamp)
+        msg_by_time_index = msg_by_time_keys.indexOf(r_timestamp)
+        msg_by_time_values[msg_by_time_index] = ""
+    }
+    r_field = receivedString.substr(2, 1)
+    r_field_count = 0
+    r_field_content = ""
+    if (msg_by_time_values[msg_by_time_index] == "") {
+    	
+    }
+    if (r_field == "M") {
+        r_mac = receivedString.substr(4, 10)
+        serial.writeLine("[" + r_timestamp + "] MAC: " + r_mac)
+    } else if (r_field == "S") {
+        r_source = receivedString.substr(4, 10)
+        serial.writeLine("[" + r_timestamp + "] SOURCE: " + r_source)
+    } else if (r_field == "D") {
+        r_destination = receivedString.substr(4, 10)
+        serial.writeLine("[" + r_timestamp + "] DESTINATION: " + r_destination)
+    } else if (r_field == "P") {
+        r_protocol = receivedString.substr(4, 10)
+        serial.writeLine("[" + r_timestamp + "] PROTOCOL: " + r_protocol)
+    } else if (r_field == "C") {
+        r_content = receivedString.substr(4, 10)
+        serial.writeLine("[" + r_timestamp + "] CONTENT: " + r_content)
+    }
 })
 function sendPacket (hardware_address: string, source_ip: string, destination_ip: string, protocol: string, content: string) {
-    serial.writeLine("[" + control.eventTimestamp() + "]" + hardware_address + "sent a packet!")
+    serial.writeLine("[" + control.eventTimestamp() + "] " + hardware_address + " sent a packet!")
     msg_timestamp = input.runningTimeMicros() % 100
     sendPacketFragment(msg_timestamp, "M", hardware_address)
     sendPacketFragment(msg_timestamp, "S", source_ip)
@@ -48,6 +78,18 @@ function main () {
     serial.writeLine("Generated new MAC: " + hardware_address)
 }
 let msg_timestamp = 0
+let r_content = ""
+let r_protocol = ""
+let r_destination = ""
+let r_source = ""
+let r_mac = ""
+let r_field_content = ""
+let r_field_count = 0
+let r_field = ""
+let r_timestamp = ""
+let msg_by_time_index = 0
+let msg_by_time_values: string[] = []
+let msg_by_time_keys: string[] = []
 let random_char = ""
 let hex_string = ""
 let hexadecimal_characters: string[] = []
